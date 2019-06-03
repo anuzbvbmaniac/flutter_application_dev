@@ -1,111 +1,208 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
+void main() {
+  runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: "Simple Interest Calculator",
+      home: SIForm(),
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
-    );
+        brightness: Brightness.dark,
+        primaryColor: Colors.indigo,
+        accentColor: Colors.indigoAccent,
+      )
+    )
+  );
+}
+
+class SIForm extends StatefulWidget{
+  @override
+  State<StatefulWidget> createState() {
+    return _SIFormState();
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+class _SIFormState extends State<SIForm>{
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+  var _currency = ['Rupees', 'Dollars', 'Pounds'];
+  final _minimumpadding = 5.0;
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+  var _currentItemSelected = "";
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  void initState() { 
+    super.initState();
+    _currentItemSelected = _currency[0];    
   }
+
+  TextEditingController principalController = TextEditingController();
+  TextEditingController roiController = TextEditingController();
+  TextEditingController timeController = TextEditingController();
+
+  var displayResult = "";
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+
+    TextStyle textStyle = Theme.of(context).textTheme.title;
+
     return Scaffold(
+      // resizeToAvoidBottomPadding: false,
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text("Simple Interest Calculator"),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
+
+      body: Container(
+        margin: EdgeInsets.all(_minimumpadding * 2),
+        child: ListView(
           children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
+
+            getImageAsset(),
+
+            TextField(
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: "Principal",
+                labelStyle: textStyle,
+                hintText: "Please insert Principal Amount.",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0)
+                )
+              ),
+              style: textStyle,
+              controller: principalController,
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
+            SizedBox(height: 16.0,),
+            TextField(
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: "Rate of Interest",
+                hintText: "Please insert Interest Rate(%).",
+                labelStyle: textStyle,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0)
+                )
+              ),
+              style: textStyle,
+              controller: roiController,
             ),
+
+            SizedBox(height: 16.0,),
+
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: TextField(
+                    keyboardType: TextInputType.number,
+                    style: textStyle,
+                    decoration: InputDecoration(
+                      labelText: "Time",
+                      hintText: "Please insert Time(Years).",
+                      labelStyle: textStyle,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0)
+                      )
+                    ),
+                    controller: timeController,
+                  ),
+                ),
+
+                SizedBox(width: 12.0),
+
+                Expanded(
+                  child: DropdownButton<String>(
+                    items: _currency.map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value,),
+                      );
+                    }).toList(),
+
+                    value: _currentItemSelected,
+                    onChanged: (String newValueSelected) {
+                      _onDropdownItemSelected(newValueSelected);
+                    },
+                  ),
+                ),
+
+              ],
+            ),
+
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: RaisedButton(
+                    color: Theme.of(context).accentColor,
+                    textColor: Theme.of(context).primaryColorDark,
+                    child: Text("Calculate", textScaleFactor: 1.5,),
+                    onPressed: () {
+                      setState(() {
+                        this.displayResult = _calculateTotalReturns();
+                      });
+                    },
+                  ),
+                ),
+
+                SizedBox(height: 64.0,),
+
+                Expanded(
+                  child: RaisedButton(
+                    color: Theme.of(context).primaryColorDark,
+                    textColor: Theme.of(context).primaryColorLight,
+                    child: Text("Reset", textScaleFactor: 1.5,),
+                    onPressed: () {
+                      setState(() {
+                       _reset(); 
+                      });
+                    },
+                  ),
+                ),
+
+              ],
+            ),
+
+            Padding(
+              padding: EdgeInsets.all(_minimumpadding * 2),
+              child: Text(this.displayResult, style: textStyle,),
+            )
+
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
+  Widget getImageAsset() {
+    AssetImage assetImage = AssetImage('images/budget.png');
+    Image image = Image(image: assetImage, width: 125.0, height: 125.0,);
+    return Container(child: image, margin: EdgeInsets.all(_minimumpadding * 10.0),);
+  }
+
+  void _onDropdownItemSelected(String newValueSelected) {
+
+    setState(() {
+      this._currentItemSelected = newValueSelected;
+    });
+
+  }
+
+  String _calculateTotalReturns() {
+    double principal = double.parse(principalController.text);
+    double roi = double.parse(roiController.text);
+    double time = double.parse(timeController.text);
+
+    double totalAmountPayable = principal + (principal * roi * time) / 100;
+
+    String result = "After $time years, your investment will be worth of $totalAmountPayable $_currentItemSelected.";
+    return result;
+  }
+
+  void _reset() {
+    principalController.text = "";
+    roiController.text = "";
+    timeController.text = "";
+    displayResult = "";
+    _currentItemSelected = _currency[0];
+  }
+ 
 }
