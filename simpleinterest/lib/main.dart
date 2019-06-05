@@ -24,6 +24,7 @@ class SIForm extends StatefulWidget{
 
 class _SIFormState extends State<SIForm>{
 
+  var _formKey = GlobalKey<FormState>();
   var _currency = ['Rupees', 'Dollars', 'Pounds'];
   final _minimumpadding = 5.0;
 
@@ -52,121 +53,160 @@ class _SIFormState extends State<SIForm>{
         title: Text("Simple Interest Calculator"),
       ),
 
-      body: Container(
-        margin: EdgeInsets.all(_minimumpadding * 2),
-        child: ListView(
-          children: <Widget>[
+      body: Form(
+        key: _formKey,
+        child: Padding(
+        padding: EdgeInsets.all(_minimumpadding * 2),
+          child: ListView(
+            children: <Widget>[
 
-            getImageAsset(),
+              getImageAsset(),
 
-            TextField(
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: "Principal",
-                labelStyle: textStyle,
-                hintText: "Please insert Principal Amount.",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0)
-                )
+              TextFormField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: "Principal",
+                  labelStyle: textStyle,
+                  hintText: "Please insert Principal Amount.",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0)
+                  ),
+                  errorStyle: TextStyle(color: Colors.yellowAccent, fontSize: 18.0),
+                ),
+                style: textStyle,
+                controller: principalController,
+                validator: (String value) {
+                  if(value.isEmpty) {
+                    return "Please enter Principal Amount.";
+                  }
+                  final p = num.tryParse(value);
+                  if (p == null) {
+                    return "Please enter valid Principal Amount.";
+                  }
+                },
               ),
-              style: textStyle,
-              controller: principalController,
-            ),
-            SizedBox(height: 16.0,),
-            TextField(
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: "Rate of Interest",
-                hintText: "Please insert Interest Rate(%).",
-                labelStyle: textStyle,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0)
-                )
+              SizedBox(height: 16.0,),
+              TextFormField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: "Rate of Interest",
+                  hintText: "Please insert Interest Rate(%).",
+                  labelStyle: textStyle,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0)
+                  ),
+                  errorStyle: TextStyle(color: Colors.yellowAccent, fontSize: 18.0),
+                ),
+                style: textStyle,
+                controller: roiController,
+                validator: (String value) {
+                  if(value.isEmpty) {
+                    return "Please enter Rate of Interest.";
+                  }
+                  final r = num.tryParse(value);
+                  if(r == null) {
+                    return "Please enter valid Interest Rate.";
+                  }
+                },
               ),
-              style: textStyle,
-              controller: roiController,
-            ),
 
-            SizedBox(height: 16.0,),
+              SizedBox(height: 16.0,),
 
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    style: textStyle,
-                    decoration: InputDecoration(
-                      labelText: "Time",
-                      hintText: "Please insert Time(Years).",
-                      labelStyle: textStyle,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0)
-                      )
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextFormField(
+                      keyboardType: TextInputType.number,
+                      style: textStyle,
+                      decoration: InputDecoration(
+                        labelText: "Time",
+                        hintText: "Please insert Time(Years).",
+                        labelStyle: textStyle,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0)
+                        ),
+                        errorStyle: TextStyle(color: Colors.yellowAccent, fontSize: 18.0),
+                      ),
+                      controller: timeController,
+                      validator: (String value) {
+                        if(value.isEmpty) {
+                          return "Please enter Time.";
+                        }
+                        final n = num.tryParse(value);
+                        if(n == null) {
+                          return "Please enter valid number.";
+                        }
+                      },
                     ),
-                    controller: timeController,
                   ),
-                ),
 
-                SizedBox(width: 12.0),
+                  SizedBox(width: 12.0),
 
-                Expanded(
-                  child: DropdownButton<String>(
-                    items: _currency.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value,),
-                      );
-                    }).toList(),
+                  Expanded(
+                    child: DropdownButton<String>(
+                      items: _currency.map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value,),
+                        );
+                      }).toList(),
 
-                    value: _currentItemSelected,
-                    onChanged: (String newValueSelected) {
-                      _onDropdownItemSelected(newValueSelected);
-                    },
+                      value: _currentItemSelected,
+                      onChanged: (String newValueSelected) {
+                        _onDropdownItemSelected(newValueSelected);
+                      },
+                    ),
                   ),
-                ),
 
-              ],
-            ),
+                ],
+              ),
 
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: RaisedButton(
-                    color: Theme.of(context).accentColor,
-                    textColor: Theme.of(context).primaryColorDark,
-                    child: Text("Calculate", textScaleFactor: 1.5,),
-                    onPressed: () {
-                      setState(() {
-                        this.displayResult = _calculateTotalReturns();
-                      });
-                    },
+              SizedBox(height: 16.0,),
+
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: RaisedButton(
+                      color: Theme.of(context).accentColor,
+                      textColor: Theme.of(context).primaryColorDark,
+                      child: Text("Calculate", textScaleFactor: 1.5,),
+                      shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(8.0)),
+                      onPressed: () {
+                        setState(() {
+                          if(_formKey.currentState.validate()) {
+                            this.displayResult = _calculateTotalReturns();
+                          }
+                        });
+                      },
+                    ),
                   ),
-                ),
 
-                SizedBox(height: 64.0,),
+                SizedBox(width: 8.0,),
 
-                Expanded(
-                  child: RaisedButton(
-                    color: Theme.of(context).primaryColorDark,
-                    textColor: Theme.of(context).primaryColorLight,
-                    child: Text("Reset", textScaleFactor: 1.5,),
-                    onPressed: () {
-                      setState(() {
-                       _reset(); 
-                      });
-                    },
+                  Expanded(
+                    child: RaisedButton(
+                      color: Theme.of(context).primaryColorDark,
+                      textColor: Theme.of(context).primaryColorLight,
+                      child: Text("Reset", textScaleFactor: 1.5,),
+                      shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(8.0)),
+                      onPressed: () {
+                        setState(() {
+                         _reset(); 
+                        });
+                      },
+                    ),
                   ),
-                ),
 
-              ],
-            ),
+                ],
+              ),
 
-            Padding(
-              padding: EdgeInsets.all(_minimumpadding * 2),
-              child: Text(this.displayResult, style: textStyle,),
-            )
+              Padding(
+                padding: EdgeInsets.all(_minimumpadding * 2),
+                child: Text(this.displayResult, style: textStyle,),
+              )
 
-          ],
+            ],
+          ),
         ),
       ),
     );
